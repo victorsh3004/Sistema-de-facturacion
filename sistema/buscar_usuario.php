@@ -17,7 +17,7 @@
 	<?php include "includes/header.php"; ?>
 	<section id="container">
 
-		<?php 
+		<?php
 
 			$busqueda=strtolower($_REQUEST['busqueda']);
 			if (empty($busqueda)) {
@@ -99,7 +99,6 @@
 					<td><?php echo $data["rol"]; ?></td>
 					<td>
 						<a class="link_edit" href="editar_usuario.php?id=<?php echo $data["idusuario"]; ?>">Editar</a>
-
 
 						<?php   if ($data["idusuario"] != 1) {   ?>
 
