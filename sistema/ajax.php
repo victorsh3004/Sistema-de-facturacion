@@ -22,6 +22,7 @@
 			exit;
 		}
 
+		//Agregar datos del producto
 		if ($_POST['action'] == 'addProduct') {
 			if (!empty($_POST['cantidad']) || !empty($_POST['precio']) || !empty($_POST['producto_id'])) {
 				$cantidad 	= $_POST['cantidad'];
@@ -56,8 +57,30 @@
 			}
 			exit;
 		}
-	}
 
-	
+
+		//Eliminar datos del producto
+		if ($_POST['action'] == 'delProduct') {
+
+			if (empty($_POST['producto_id']) || !is_numeric($_POST['producto_id'])) {
+				echo "error";
+			}else{
+				$idproducto = $_POST['producto_id'];
+
+				$query_delete = mysqli_query($conection, "UPDATE producto SET estatus = 0 WHERE codproducto=$idproducto");
+				mysqli_close($conection);
+
+				if($query_delete){
+					echo "ok";					
+				}else{
+					echo "Error";
+				}
+			}
+
+			echo "error";
+		}
+		exit;
+	}
+	exit;
 
  ?>
