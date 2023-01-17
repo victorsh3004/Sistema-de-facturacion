@@ -43,7 +43,6 @@ $(document).ready(function(){
 
     });
 
-
     // Modal Form Add Product
     $('.add_product').click(function(e) {
         /* Act on the event */
@@ -88,8 +87,6 @@ $(document).ready(function(){
         
     });
 
-        
-
     //Modal Form Delete Product
     $('.del_product').click(function(e) {
         /* Act on the event */
@@ -119,7 +116,7 @@ $(document).ready(function(){
                                                 '<input type="hidden" name="action" value="delProduct" required>'+
                                                 '<div class="alert alertAddProduct"></div>'+
 
-                                                '<a href="#" class="btn_cancel" onclick="coloseModal();"><i class="fas fa-ban"></i> Cancelar</a>'+
+                                                '<a href="#" class="btn_cancel" onclick="coloseModal();"><i class="fas fa-ban"></i> Cerrar</a>'+
                                                 '<button type="submit" class="btn_ok"><i class="far fa-trash-alt"></i> Eliminar</button>'+
                                             '</form>');
                 }
@@ -135,8 +132,18 @@ $(document).ready(function(){
         
     });
 
+    $('#search_proveedor').change(function(e){
+        e.preventDefault();
+        var sistema = getUrl();
+        location.href = sistema+'buscar_productos.php?proveedor='+$(this).val();
+    })
+}); // End ready
 
-});
+function getUrl(){
+    var loc = window.location;
+    var pathName = loc.pathname.substring(0, loc.pathname.lastIndexOf('/')+1);
+    return loc.href.substring(0, loc.href.length - ((loc.pathname + loc.search + loc.hash).length - pathName.length));
+}
 
 function sendDataProduct(){
     $('.alertAddProduct').html('');
@@ -166,8 +173,6 @@ function sendDataProduct(){
 
         });
 }
-
-
 
 //Eliminar producto
 function delProduct(){

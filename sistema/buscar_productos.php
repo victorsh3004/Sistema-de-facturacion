@@ -13,6 +13,26 @@
 <body>
 	<?php include "includes/header.php"; ?>
 	<section id="container">
+
+		<?php 
+			$busqueda='';
+			$search_proveedor='';
+			if (empty($_REQUEST['busqueda']) && empty($_REQUEST['proveedor'])) {
+				header("location: lista_producto.php");
+			}
+
+			if (!empty($_REQUEST['busqueda'])) {
+				$busqueda = strtolower($_REQUEST['busqueda']);
+				$where = "(codproducto LIKE '%$busqueda%' OR descripcion LIKE '%$busqueda%') AND estatus = 1";
+			}
+
+			if (!empty($_REQUEST['proveedor'])) {
+				$search_proveedor = strtolower($_REQUEST['proveedor']);
+				$where = "proveedor LIKE $search_proveedor AND estatus = 1";
+			}
+
+		 ?>
+
 		<h1><i class="fas fa-list-alt"></i> Lista de Producto</h1>
 		<a href="registro_producto.php" class="btn_new"><i class="fas fa-user-plus"></i> Crear Producto</a>
 
@@ -29,16 +49,27 @@
 			<th>
 
 				<?php 
-					$query_proveedor = mysqli_query($conection,"SELECT codproveedor, proveedor FROM proveedor WHERE estatus = 1 order by proveedor asc");
+					$pro = 0;
+					if (!empty($_REQUEST['proveedor'])) {
+						$pro = $_REQUEST['proveedor'];
+					}
+
+					$query_proveedor = mysqli_query($conection,"SELECT * FROM proveedor WHERE estatus = 1 order by proveedor asc");
 					$result_proveedor = mysqli_num_rows($query_proveedor);
 				 ?>
 				<select name="proveedor" id="search_proveedor">
 					<?php 
 						if ($result_proveedor > 0) {
 							while ($proveedor = mysqli_fetch_array($query_proveedor)) {
+								if ($pro == $proveedor['codproveedor']) {
+					?>
+						<option value="<?php echo $proveedor['codproveedor']; ?>" selected><?php echo $proveedor['proveedor']; ?></option>
+					<?php
+								}else{
 					?>
 						<option value="<?php echo $proveedor['codproveedor']; ?>"><?php echo $proveedor['proveedor']; ?></option>
 					<?php
+								}
 							}
 						}
 					 ?>
@@ -52,9 +83,13 @@
 		<?php
 
 		//Paginador
-			$sql_register=mysqli_query($conection,"SELECT COUNT(*) as total_registro FROM producto WHERE estatus=1");
+			$sql_register=mysqli_query($conection,"SELECT COUNT(*) as total_registro FROM producto 
+																		WHERE $where");
 			$result_register = mysqli_fetch_array($sql_register);
 			$total_registro = $result_register['total_registro'];
+
+			echo $total_registro;
+			exit;
 
 			$por_pagina = 10;
 
