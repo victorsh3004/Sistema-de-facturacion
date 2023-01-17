@@ -23,12 +23,15 @@
 
 			if (!empty($_REQUEST['busqueda'])) {
 				$busqueda = strtolower($_REQUEST['busqueda']);
-				$where = "(codproducto LIKE '%$busqueda%' OR descripcion LIKE '%$busqueda%') AND estatus = 1";
+				$where = "(p.codproducto LIKE '%$busqueda%' OR p.descripcion LIKE '%$busqueda%') AND p.estatus = 1";
+				$buscar = 'busqueda'.$busqueda;
+				
 			}
 
 			if (!empty($_REQUEST['proveedor'])) {
 				$search_proveedor = strtolower($_REQUEST['proveedor']);
-				$where = "proveedor LIKE $search_proveedor AND estatus = 1";
+				$where = "p.proveedor LIKE $search_proveedor AND p.estatus = 1";
+				$buscar = 'proveedor='.$search_proveedor;
 			}
 
 		 ?>
@@ -37,7 +40,7 @@
 		<a href="registro_producto.php" class="btn_new"><i class="fas fa-user-plus"></i> Crear Producto</a>
 
 		<form action="buscar_productos.php" method="get" class="form_search">
-			<input type="text" name="busqueda" id="busqueda" placeholder="Buscar">
+			<input type="text" name="busqueda" id="busqueda" placeholder="Buscar" value="<?php echo $busqueda ?>">
 			<button type="submit" class="btn_search"> <i class="fas fa-search"></i></button>
 		</form>
 	<table>
@@ -58,6 +61,7 @@
 					$result_proveedor = mysqli_num_rows($query_proveedor);
 				 ?>
 				<select name="proveedor" id="search_proveedor">
+					<option value="" selected>TodoProveedor</option>
 					<?php 
 						if ($result_proveedor > 0) {
 							while ($proveedor = mysqli_fetch_array($query_proveedor)) {
@@ -83,13 +87,13 @@
 		<?php
 
 		//Paginador
-			$sql_register=mysqli_query($conection,"SELECT COUNT(*) as total_registro FROM producto 
+			$sql_register=mysqli_query($conection,"SELECT COUNT(*) as total_registro FROM producto as p
 																		WHERE $where");
 			$result_register = mysqli_fetch_array($sql_register);
 			$total_registro = $result_register['total_registro'];
 
-			echo $total_registro;
-			exit;
+			//echo $total_registro;
+			
 
 			$por_pagina = 10;
 
@@ -102,7 +106,12 @@
 			 $desde = ($pagina-1)*$por_pagina;
 			 $total_paginas = ceil($total_registro / $por_pagina);
 
-			$query = mysqli_query($conection, "SELECT p.codproducto,p.descripcion,p.precio,p.existencia,pr.proveedor,p.foto FROM producto p INNER JOIN proveedor pr ON p.proveedor = pr.codproveedor WHERE p.estatus = 1 
+			$query = mysqli_query($conection, "SELECT p.codproducto,p.descripcion,p.precio,p.existencia,pr.proveedor,p.foto FROM 
+											producto p 
+											INNER JOIN proveedor pr 
+											ON p.proveedor = pr.codproveedor 
+											WHERE 
+											$where
 				ORDER BY p.codproducto ASC LIMIT $desde,$por_pagina");
 			mysqli_close($conection);
 
@@ -143,15 +152,17 @@
 		?>
 
 	</table>
-
+	<?php 
+		if ($total_paginas != 0) {
+	?>
 	<div class="paginador">
 		<ul>
 			<?php 
 			if ($pagina != 1) {
 			 	
 			 ?>
-			<li><a href="?pagina= <?php echo 1; ?>">|<</a></li>
-			<li><a href="?pagina=<?php echo $pagina-1; ?>"><<</a></li>
+			<li><a href="?pagina= <?php echo 1; ?>&<?php echo $buscar; ?>"><i class="fas fa-step-backward"></i></a></li>
+			<li><a href="?pagina=<?php echo $pagina-1; ?>&<?php echo $buscar; ?>"><i class="fas fa-backward"></i></a></li>
 			
 			<?php 
 			} ?>
@@ -162,7 +173,7 @@
 					if ($i == $pagina) {
 						echo '<li class="pageSelected">'.$i.'</li>';
 					}else{
-					echo '<li><a href="?pagina='.$i.'">'.$i.'</a></li>';
+						echo '<li><a href="?pagina='.$i.'&'.$buscar.'">'.$i.'</a></li>';
 					}
 				}
 
@@ -170,14 +181,14 @@
 					
 			 ?>
 
-			<li><a href="?pagina=<?php echo $pagina+1; ?>">>></a></li>
-			<li><a href="?pagina=<?php echo $total_paginas; ?>">>|</a></li>
+			<li><a href="?pagina=<?php echo $pagina+1; ?>&<?php echo $buscar; ?>"><i class="fas fa-forward"></i></a></li>
+			<li><a href="?pagina=<?php echo $total_paginas; ?>&<?php echo $buscar; ?>"><i class="fas fa-step-forward"></i></a></li>
 			<?php 
 				}
 			 ?>
 		</ul>	
-
 	</div>
+	<?php } ?>
 
 	</section>
 	<?php include "includes/footer.php"; ?>
