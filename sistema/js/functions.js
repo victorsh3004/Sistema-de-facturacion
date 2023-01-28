@@ -136,8 +136,233 @@ $(document).ready(function(){
         e.preventDefault();
         var sistema = getUrl();
         location.href = sistema+'buscar_productos.php?proveedor='+$(this).val();
+    });
+    //Activa campos para registrar cliente
+    $('.btn_new_cliente').click(function(e){
+        e.preventDefault();
+        $('#nom_cliente').removeAttr('disabled');
+        $('#tel_cliente').removeAttr('disabled');
+        $('#dir_cliente').removeAttr('disabled');
+
+        $('#div_registro_cliente').slideDown(); //mostramos el div ya que tiene un display none
+    });
+
+    //Buscar cliente
+    $('#dni_cliente').keyup(function(e){
+        e.preventDefault();
+
+        var cl = $(this).val();
+        var action = 'searchCliente';
+
+        $.ajax({
+            url:    "ajax.php",
+            type:   "POST",
+            async:  true,
+            data:   {action:action,cliente:cl},
+
+            success: function(response)
+            {
+                console.log(response);
+                if (response == 0) {
+                    $('#idCliente').val('');
+                    $('#nom_cliente').val('');
+                    $('#tel_cliente').val('');
+                    $('#dir_cliente').val('');
+                    //Mostrar boton agregar
+                    $('.btn_new_cliente').slideDown();
+                }else{
+                    var data = $.parseJSON(response);
+                    $('#idcliente').val(data.idcliente);
+                    $('#nom_cliente').val(data.nombre);
+                    $('#tel_cliente').val(data.telefono);
+                    $('#dir_cliente').val(data.direccion);
+                    //Ocultar boton agregar
+                    $('.btn_new_cliente').slideUp();
+
+                    //Bloque campos
+                    $('#nom_cliente').attr('disabled','disabled');
+                    $('#tel_cliente').attr('disabled','disabled');
+                    $('#dir_cliente').attr('disabled','disabled');
+
+                    //Ocultar boton guardar
+                    $('#div_registro_cliente').slideUp();
+                }
+            },
+            error: function(error){
+
+            }
+        });
+    });
+
+    //Crear cliente - ventas
+    $('#form_new_cliente_venta').submit(function(e){
+        e.preventDefault();
+
+
+        $.ajax({
+            url:    "ajax.php",
+            type:   "POST",
+            async:  true,
+            data:   $('#form_new_cliente_venta').serialize(),
+
+            success: function(response)
+            {
+                //console.log(response);
+                $('#idcliente').val(response);
+                //Bloque campos
+                $('#nom_cliente').attr('disabled','disabled');
+                $('#tel_cliente').attr('disabled','disabled');
+                $('#dir_cliente').attr('disabled','disabled');
+
+                //Oculta boton agregar
+                $('.btn_new_cliente').slideUp(); // slideUp funcion propia de jquery
+                //Oculta boton guardar
+                $('#div_registro_cliente').slideUp();
+            },
+            error: function(error){
+
+            }
+        });
+
+    });
+
+    //Buscar Producto
+    $('#txt_cod_producto').keyup(function(e){
+        e.preventDefault();
+
+        var producto = $(this).val();
+        var action = 'infoProducto';
+        
+
+        if (producto != '') {
+            $.ajax({
+                url:    'ajax.php',
+                type:   "POST",
+                async:  true,
+                data:   {action:action,producto:producto},
+
+                success: function(response)
+                {
+                    if (response != 'error') {
+                        var info = JSON.parse(response);
+                        $('#txt_descripcion').html(info.descripcion);
+                        $('#txt_existencia').html(info.existencia);
+                        $('#txt_cant_producto').val('1');
+                        $('#txt_precio').html(info.precio);
+                        $('#txt_precio_total').html(info.precio);
+
+                        //Activar Cantidad
+                        $('#txt_cant_producto').removeAttr('disabled');
+
+                        //Mostrar botón agregar
+                        $('#add_product_venta').slideDown();
+                    }else{
+                        $('#txt_descripcion').html('-');
+                        $('#txt_existencia').html('-');
+                        $('#txt_cant_producto').val('0');
+                        $('#txt_precio').html('0.00');
+                        $('#txt_precio_total').html('0.00');
+
+                        //Bloquear Cantidad
+                        $('#txt_cant_producto').attr('disabled','disabled');
+
+                        //Ocultar boton agregar
+                        $('#add_product_venta').slideUp();
+                    }
+                },
+                error: function(error){
+
+                }
+            });
+        };
+
+        //Agregar producto al detalle
+        $('#add_product_venta').click(function(e){
+            e.preventDefault();
+            if ($('#txt_cant_producto').val() > 0){
+                var codproducto = $('#txt_cod_producto').val();
+                var cantidad = $('#txt_cant_producto').val();
+                var action = 'addProductoDetalle';
+
+                $.ajax({
+                    url :'ajax.php',
+                    type:"POST",
+                    async: true,
+                    data: {action:action,producto:codproducto,cantidad:cantidad},
+
+                    success:function(response){
+                        if (response != 'error') {
+                            var info = JSON.parse(response);
+                            $('#detalle_venta').html(info.detalle);
+                            $('#detalle_totales').html(info.detalle_totales);
+
+                            $('#txt_cod_producto').val('');
+                            $('#txt_descripcion').html('-');
+                            $('#txt_existencia').html('-');
+                            $('#txt_cant_producto').val('0');
+                            $('#txt_precio').html('0.00');
+                            $('#txt_precio_total').html('0.00');
+                            
+                            //Bloquear cantidad
+                            $('#txt_cant_producto').attr('disabled','disabled');
+
+                            //Ocultar boton agregar
+                            $('#add_product_venta').slideUp();
+                        }else{
+                            console.log('no data');
+                        }
+                        //console.log(response);
+                    },
+                    error: function(error){
+                    }
+                });
+            }
+        });
+
+    });
+
+    //Validar cantidad del producto antes de agregar
+    $('#txt_cant_producto').keyup(function(e){
+        e.preventDefault();
+        var precio_total = $(this).val() * $('#txt_precio').html();
+        var existencia = parseInt($('#txt_existencia').html());
+        $('#txt_precio_total').html(precio_total);
+
+        //ocultar el boton agregar si la cantidad es menor que 1
+        if (($(this).val() < 1 || isNaN($(this).val())) ||  ($(this).val() > existencia)) {
+            $('#add_product_venta').slideUp();//oculta el boton
+        }else{
+            $('#add_product_venta').slideDown();
+        }
     })
+
+
 }); // End ready
+
+function serchForDetalle(id){
+    var action = 'serchForDetalle';
+    var user = id; 
+
+    $.ajax({
+            url :'ajax.php',
+            type:"POST",
+            async: true,
+            data: {action:action,user:user},
+
+                    success:function(response){
+                        if (response != 'error') {
+                            var info = JSON.parse(response);
+                            $('#detalle_venta').html(info.detalle);
+                            $('#detalle_totales').html(info.totales);
+
+                        }else{
+                            console.log('no data');
+                        }
+                    },
+                    error: function(error){
+                    }
+                });
+}
 
 function getUrl(){
     var loc = window.location;

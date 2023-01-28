@@ -46,10 +46,10 @@
 					</ul>
 				</li>
 				<li class="principal">
-					<a href="#"><i class="fas fa-clipboard"></i> Facturas</a>
+					<a href="#"><i class="fas fa-clipboard"></i> Ventas</a>
 					<ul>
-						<li><a href="#"><i class="far fa-sticky-note"></i> Nuevo Factura</a></li>
-						<li><a href="#"><i class="fas fa-th-list"></i> Facturas</a></li>
+						<li><a href="nueva_venta.php"><i class="far fa-sticky-note"></i> Nueva Venta</a></li>
+						<li><a href="#"><i class="fas fa-th-list"></i> Ventas</a></li>
 					</ul>
 				</li>
 			</ul>
