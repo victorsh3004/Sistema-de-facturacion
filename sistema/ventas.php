@@ -84,7 +84,7 @@
 					}
 
 		?>
-			<tr>
+			<tr id="row_<?php echo $data["nofactura"]; ?>">
 				<td><?php echo $data["nofactura"]; ?></td>
 				<td><?php echo $data["fecha"] ?></td>
 				<td><?php echo $data["cliente"]; ?></td>
@@ -92,12 +92,26 @@
 				<td><?php echo $estado; ?></td>
 				<td class="textright totalfactura"><span>S/</span><?php echo $data["totalfactura"]; ?></td>
 				<td>
-					<a class="link_edit" href="editar_cliente.php?id=<?php echo $data["idcliente"]; ?>"><i class="far fa-edit"></i> Editar</a>
+					<div class="div_acciones">
+						<div>
+							<button class="btn_view view_factura" type="button" cl="<?php echo $data["codcliente"]; ?>" f="<?php echo $data['nofactura'] ?>"><i class="fas fa-eye"></i></button>
+						</div>
+						
+					<?php if ($_SESSION['rol']==1 || $_SESSION['rol']==2) {
+						if ($data["estatus"]==1) {
+					
+					 ?>
 
-					<?php if ($_SESSION['rol']==1 || $_SESSION['rol'] == 2) {
-					?>
-					<a class="link_delete" href="eliminar_confirmar_cliente.php?id=<?php echo $data["idcliente"]; ?>"><i class="far fa-trash-alt"></i> Eliminar</a>
-					<?php } ?>
+					<div class="div_factura">
+						<button class="btn_anular anular_factura" fac="<?php echo $data["nofactura"]; ?>"><i class="fas fa-ban"></i></button>
+					</div>
+					<?php }else{ ?>
+						<div class="div_factura">
+							<button type="button" class="btn_anular inactive"><i class="fas fa-ban"></i></button>
+						</div>
+					<?php } 
+					}?>
+					</div>
 				</td>	
 			</tr>
 
