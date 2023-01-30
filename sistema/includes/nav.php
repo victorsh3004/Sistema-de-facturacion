@@ -49,7 +49,7 @@
 					<a href="#"><i class="fas fa-clipboard"></i> Ventas</a>
 					<ul>
 						<li><a href="nueva_venta.php"><i class="far fa-sticky-note"></i> Nueva Venta</a></li>
-						<li><a href="#"><i class="fas fa-th-list"></i> Ventas</a></li>
+						<li><a href="ventas.php"><i class="fas fa-th-list"></i> Ventas</a></li>
 					</ul>
 				</li>
 			</ul>

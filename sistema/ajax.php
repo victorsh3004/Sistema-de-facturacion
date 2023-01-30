@@ -164,7 +164,7 @@
 											<td class="textright">'.$data['precio_venta'].'</td>
 											<td class="textright">'.$precioTotal.'</td>
 											<td class="">
-												<a href="link_delete" href="#" onclick="event.preventDefault(); del_product_detalle('.$data['codproducto'].');"><i class="far fa-trash-alt"></i></a>						
+												<a href="link_delete" href="#" onclick="event.preventDefault(); del_product_detalle('.$data['correlativo'].');"><i class="far fa-trash-alt"></i></a>						
 											</td>
 										</tr>';
 					}
@@ -246,7 +246,7 @@
 											<td class="textright">'.$data['precio_venta'].'</td>
 											<td class="textright">'.$precioTotal.'</td>
 											<td class="">
-												<a href="link_delete" href="#" onclick="event.preventDefault(); del_product_detalle('.$data['codproducto'].');"><i class="far fa-trash-alt"></i></a>						
+												<a href="link_delete" href="#" onclick="event.preventDefault(); del_product_detalle('.$data['correlativo'].');"><i class="far fa-trash-alt"></i></a>						
 											</td>
 										</tr>';
 					}
@@ -279,6 +279,128 @@
 			}
 			exit;
 		}
+
+
+		if ($_POST['action'] == 'delProductoDetalle'){
+			//print_r($_POST);exit;
+			if (empty($_POST['id_detalle'])) {
+				echo 'error';
+			}else{
+				$id_detalle 	= $_POST['id_detalle'];
+				$token			= md5($_SESSION['idUser']);
+
+				$query_igv = mysqli_query($conection, "SELECT igv FROM configuracion");
+				$result_igv = mysqli_num_rows($query_igv);
+
+				$query_detalle_temp = mysqli_query($conection,"CALL del_detalle_temp($id_detalle, '$token')");
+				$result 			= mysqli_num_rows($query_detalle_temp);
+
+				$detalleTabla = '';
+				$sub_total		= 0;
+				$igv 			= 0;
+				$total 			= 0;
+				$arrayData		= array();
+
+				if ($result > 0) {
+					if ($result_igv) {
+						$info_igv 	= mysqli_fetch_assoc($query_igv);
+						$igv 		= $info_igv['igv']; 
+					}
+
+					while ($data = mysqli_fetch_assoc($query_detalle_temp)){
+						$precioTotal	= round($data['cantidad'] * $data['precio_venta'], 2);
+						$sub_total		= round($sub_total + $precioTotal, 2);
+						$total 			= round($total + $precioTotal, 2);
+
+						$detalleTabla .= '<tr>
+											<td>'.$data['codproducto'].'</td>
+											<td colspan="2">'.$data['descripcion'].'</td>
+											<td class="textcenter">'.$data['cantidad'].'</td>
+											<td class="textright">'.$data['precio_venta'].'</td>
+											<td class="textright">'.$precioTotal.'</td>
+											<td class="">
+												<a href="link_delete" href="#" onclick="event.preventDefault(); del_product_detalle('.$data['correlativo'].');"><i class="far fa-trash-alt"></i></a>						
+											</td>
+										</tr>';
+					}
+
+					$impuesto = round($sub_total * ($igv/100), 2);
+					$tl_snigv = round($sub_total - $impuesto, 2);
+					$total 	  = round($tl_snigv + $impuesto, 2);
+
+					$detalleTotales ='<tr>
+										<td colspan="5" class="textright">SUBTOTAL S/.</td>
+										<td class="textright">'.$tl_snigv.'</td>
+									</tr>
+									<tr>
+										<td colspan="5" class="textright">IGV ('.$igv.'%)</td>
+										<td class="textright">'.$impuesto.'</td>
+									</tr>
+									<tr>
+										<td colspan="5" class="textright">TOTAL S/.</td>
+										<td class="textright">'.$total.'</td>
+									</tr>';
+
+					$arrayData['detalle'] = $detalleTabla;
+					$arrayData['totales'] = $detalleTotales;
+
+					echo json_encode($arrayData,JSON_UNESCAPED_UNICODE);
+				}else{
+					echo 'error';
+				}
+				mysqli_close($conection);
+			}
+			exit;
+		}
+
+		//Anular Venta
+		if ($_POST['action'] == 'anularVenta') {
+			$token = md5($_SESSION['idUser']);
+			$query_del = mysqli_query($conection, "DELETE FROM detalle_temp WHERE token_user = '$token'");
+			mysqli_close($conection);
+			if ($query_del) {
+				echo 'ok';
+			}else{
+				echo 'error';
+			}
+			exit;
+		}
+
+		//Procesar Venta
+		if ($_POST['action'] == 'procesarVenta') {
+			
+			//print_r($_POST);exit;
+			if (empty($_POST['codcliente'])) {
+				$codcliente = 1;
+			}else{
+				$codcliente = $_POST['codcliente'];
+			}
+
+			$token	=md5($_SESSION['idUser']);
+			$usuario= $_SESSION['idUser'];
+
+			$query = mysqli_query($conection,"SELECT * FROM detalle_temp WHERE token_user = '$token'");
+			$result = mysqli_num_rows($query);
+
+			if ($result > 0) {
+				$query_procesar = mysqli_query($conection, "CALL procesar_venta($usuario,$codcliente,'$token')");
+				$result_detalle = mysqli_num_rows($query_procesar);
+
+				if ($result_detalle > 0) {
+					$data = mysqli_fetch_assoc($query_procesar);
+					echo json_encode($data,JSON_UNESCAPED_UNICODE);
+				}else{
+					echo "error";
+				}
+			}else{
+				echo "error";
+			}
+			mysqli_close($conection);
+			exit;
+		}
+
+
+////////////
 	}
 	exit;
 
