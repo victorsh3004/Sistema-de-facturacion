@@ -71,7 +71,7 @@ $(document).ready(function(){
                                                 '<input type="hidden" name="action" value="addProduct" required>'+
                                                 '<div class="alert alertAddProduct"></div>'+
                                                 '<button type="submit" class="btn_new"><i class="fas fa-plus"></i> Agregar</button>'+
-                                                '<a href="#" class="btn_ok closeModal" onclick="coloseModal();"><i class="fas fa-ban"></i> Cerrar</a>'+
+                                                '<a href="#" class="btn_ok closeModal" onclick="closeModal();"><i class="fas fa-ban"></i> Cerrar</a>'+
                                                 
                                             '</form>');
                 }
@@ -116,7 +116,7 @@ $(document).ready(function(){
                                                 '<input type="hidden" name="action" value="delProduct" required>'+
                                                 '<div class="alert alertAddProduct"></div>'+
 
-                                                '<a href="#" class="btn_cancel" onclick="coloseModal();"><i class="fas fa-ban"></i> Cerrar</a>'+
+                                                '<a href="#" class="btn_cancel" onclick="closeModal();"><i class="fas fa-ban"></i> Cerrar</a>'+
                                                 '<button type="submit" class="btn_ok"><i class="far fa-trash-alt"></i> Eliminar</button>'+
                                             '</form>');
                 }
@@ -402,7 +402,76 @@ $(document).ready(function(){
     });
 
 
+    //Modal From anular factura
+        $('.anular_factura').click(function(e) {
+        /* Act on the event */
+        e.preventDefault();
+        var nofactura = $(this).attr('fac');
+        var action = 'infoFactura';
+
+        $.ajax({
+            url: 'ajax.php',
+            type: 'POST',
+            async: true,
+            data: {action:action,nofactura:nofactura},
+
+            success: function(response){
+                if (response != 'error') {
+                    var info = JSON.parse(response);
+                    //$('#producto_id').val(info.codproducto);
+                    //$('.nameProducto').html(info.descripcion);
+                    //console.log(info);
+
+                    $('.bodyModal').html('<form action="" method="post" name="form_anular_factura" id="form_anular_factura" onsubmit="event.preventDefault(); anularFactura();">'+
+                                                '<h1><i class="fas fa-cubes" styles="font-size: 45pt;"></i> <br> Anular Factura</h1>'+
+                                                '<p>¿Realmente desea anular la factura?</p>'+
+
+                                                '<p><strong>No. '+info.nofactura+'</strong></p>'+
+                                                '<p><strong>Monto S/.'+info.totalfactura+'</strong></p>'+
+                                                '<p><strong>Fecha '+info.fecha+'</strong></p>'+
+                                                '<input type="hidden" name="action" value="anularFactura">'+
+                                                '<input type="hidden" name="no_factura" id="no_factura" value="'+info.nofactura+'" required>'+
+
+                                                '<div class="alert alertAddProduct"></div>'+
+                                                '<button type="submit" class="btn_ok"><i class="far fa-trash-alt"></i> Anular</button>'+
+                                                '<a href="#" class="btn_cancel closeModal" onclick="closeModal();"><i class="fas fa-ban"></i> Cerrar</a>'+
+                                            '</form>');
+                }
+            },
+
+            error: function(error){
+                console.log(error);
+            }
+
+        });
+
+        $('.modal').fadeIn();//Cerramos el modal
+        
+    });
+
+
 }); // End ready
+
+//Anular factura
+function anularFactura(){
+    var noFactura = $('#no_factura').val();
+    var action = 'anularFactura';
+
+    $.ajax({
+            url : 'ajax.php',
+            type: "POST",
+            async: true,
+            data: {action:action,noFactura:noFactura},
+
+            success: function(response){
+                console.log(response);
+            },
+            error: function(error){
+            }
+    });
+
+
+}
 
 function generarPDF(cliente,factura){
     var ancho = 1000;
@@ -562,7 +631,7 @@ function delProduct(){
         });
 }
 
-function coloseModal(){
+function closeModal(){
         $('.alertAddProduct').html('');
         $('#txtCantidad').val('');
         $('#txtPrecio').val('');

@@ -484,7 +484,7 @@ table td{
 	margin-top: 15px;
 }
 
-#form_add_product, #form_del_product{
+#form_add_product, #form_del_product, #form_anular_factura{
 	width: 420px;
 	background: #FFF;
 	text-align: center;
